@@ -1,0 +1,10 @@
+#aiwindow {
+    padding: 20px;
+}
+
+#response {
+    min-height: 100px;
+    overflow-y: auto;
+    height: auto;
+    transition: max-height 0.2s;
+}
