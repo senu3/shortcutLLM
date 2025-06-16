@@ -9,12 +9,53 @@
 </head>
 
 <body>
-    <div id="aiwindow">
-        <div class="row">
-            <input id="prompt" class="col-8" type="text" placeholder="プロンプトを入力…" />
-            <button id="send" class="col button primary">送信</button>
+    <nav class="nav">
+        <div class="nav-left">
+            <a class="brand" href="#">shortcutLLM</a>
+            <div class="tabs">
+                <a class="active" id="tab-main">メイン</a>
+                <a id="tab-settings">設定</a>
+            </div>
         </div>
-        <div id="response" class="card text-primary">ここに回答が表示されます
+    </nav>
+    <div id="aiwindow">
+        <div id="main-view">
+            <div class="row">
+                <input id="prompt" class="col-8" type="text" placeholder="プロンプトを入力…" />
+                <button id="send" class="col button primary">送信</button>
+            </div>
+            <div id="response" class="card text-primary">ここに回答が表示されます</div>
+        </div>
+        <div id="settings-view" style="display:none;">
+            <form id="settings-form">
+                <div class="row">
+                    <label class="col-4">API種別</label>
+                    <select id="provider" class="col-8">
+                        <option value="ollama">Ollama</option>
+                        <option value="openai">OpenAI</option>
+                    </select>
+                </div>
+                <div class="row">
+                    <label class="col-4">モデル名</label>
+                    <input id="model" class="col-8" type="text" />
+                </div>
+
+                <div class="row">
+                    <span class="col-4"></span>
+                    <details class="dropdown col-8">
+                        <summary class="button outline">詳細設定</summary>
+                        <form class="card row">
+                            <label>APIエンドポイント</label>
+                            <input id="apibaseurl" class="col-12" type="text" />
+                            <label>APIキー</label>
+                            <input id="apikey" class="col-12" type="password" />
+                        </form>
+                    </details>
+                </div>
+                <div class="row">
+                    <button type="submit" class="button primary">保存</button>
+                </div>
+            </form>
         </div>
         <script type="module" src="/src/main.js"></script>
     </div>

@@ -1,6 +1,4 @@
 # shortcutLLM
 
-shortcutLLMは、Go×WailsのミニAIチャットアプリです。  
-プロンプト入力・AI応答ができるミニウィンドウを呼び出します。
-
-Ollama等のローカルLLMと連携します（拡張予定）
+shortcutLLMはいつでもどこでも、小さなウィンドウから手軽に対話AI（LLM）とやりとりできるデスクトップアプリです。
+[プロトタイプ　v0.1.0](https://github.com/senu3/shortcutLLM/releases/tag/v0.1.0)  

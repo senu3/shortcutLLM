@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"embed"
+	"os"
 
 	"github.com/tmc/langchaingo/llms"
 	"github.com/tmc/langchaingo/llms/ollama"
+	"github.com/tmc/langchaingo/llms/openai"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -13,8 +15,28 @@ import (
 
 // プロンプトを受けてAIで返答
 func (a *App) AskAI(prompt string) (string, error) {
+	cfg, err := a.GetConfig()
+	if err != nil {
+		return "", err
+	}
 	ctx := context.Background()
-	llm, err := ollama.New(ollama.WithModel("Qwen3:4B"))
+	var llm llms.Model
+	if cfg.Provider == "openai" {
+		token := cfg.APIKey
+		if token == "" {
+			token = os.Getenv("OPENAI_API_KEY")
+		}
+		llm, err = openai.New(
+			openai.WithModel(cfg.Model),
+			openai.WithBaseURL(cfg.APIBaseURL),
+			openai.WithToken(token),
+		)
+	} else {
+		llm, err = ollama.New(
+			ollama.WithModel(cfg.Model),
+			ollama.WithServerURL(cfg.APIBaseURL),
+		)
+	}
 	if err != nil {
 		return "", err
 	}
@@ -36,7 +58,7 @@ func main() {
 	err := wails.Run(&options.App{
 		Title:       "AIチャット（Wails×Go）",
 		Width:       700,
-		Height:      240,
+		Height:      300,
 		AlwaysOnTop: true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,

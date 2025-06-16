@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 )
 
 // App struct
@@ -24,4 +26,37 @@ func (a *App) startup(ctx context.Context) {
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+
+// 設定構造体
+type Config struct {
+	Provider   string `json:"Provider"`
+	Model      string `json:"Model"`
+	APIBaseURL string `json:"APIBaseURL"`
+	APIKey     string `json:"APIKey"`
+}
+
+// 設定ファイルパス
+const configPath = "config.json"
+
+// 設定を取得
+func (a *App) GetConfig() (Config, error) {
+	var cfg Config
+	f, err := os.Open(configPath)
+	if err != nil {
+		return cfg, err
+	}
+	defer f.Close()
+	json.NewDecoder(f).Decode(&cfg)
+	return cfg, nil
+}
+
+// 設定を保存
+func (a *App) SetConfig(cfg Config) error {
+	f, err := os.Create(configPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	return json.NewEncoder(f).Encode(cfg)
 }
