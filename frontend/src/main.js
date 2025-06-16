@@ -9,7 +9,7 @@ const output = document.getElementById("response");
 button.onclick = async () => {
     const prompt = input.value;
     if (!prompt) return;
-    output.textContent = "応答中...";
+    output.innerHTML = '<span class="loading"></span>';
     window.go.main.App.AskAI(prompt).then(res => {
         // <think>...</think>を除去
         const cleanRes = res.replace(/<think>[\s\S]*?<\/think>/gi, '');
