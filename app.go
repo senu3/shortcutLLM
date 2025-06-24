@@ -44,7 +44,14 @@ func (a *App) GetConfig() (Config, error) {
 	var cfg Config
 	f, err := os.Open(configPath)
 	if err != nil {
-		return cfg, err
+		// ファイルがなければ初期値を返す
+		cfg = Config{
+			Provider:   "OpenAI",
+			Model:      "gpt-4.1-nano",
+			APIBaseURL: "",
+			APIKey:     "",
+		}
+		return cfg, nil
 	}
 	defer f.Close()
 	json.NewDecoder(f).Decode(&cfg)
