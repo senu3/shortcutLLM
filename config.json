@@ -1,6 +1,0 @@
-{
-    "Provider": "openai",
-    "Model": "gpt-4.1-nano",
-    "APIBaseURL": "",
-    "APIKey": ""
-}
