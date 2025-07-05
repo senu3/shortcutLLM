@@ -13,12 +13,14 @@ const tabSettings = document.getElementById("tab-settings");
 const mainView = document.getElementById("main-view");
 const settingsView = document.getElementById("settings-view");
 const settingsForm = document.getElementById("settings-form");
+const modelInput = document.getElementById("model");
 const apiBaseUrlInput = document.getElementById("apibaseurl");
 const apiKeyInput = document.getElementById("apikey");
 
 // --- ドロップダウンUI制御 ---
 const providerDropdown = document.getElementById("provider-dropdown");
 const modelDropdown = document.getElementById("model-dropdown");
+const modelTextInput = document.getElementById("model");
 
 // プロバイダー候補（今後拡張しやすいよう配列で定義）
 const PROVIDERS = [
@@ -44,7 +46,11 @@ function fillModelDropdown(provider, currentModel) {
     modelDropdown.innerHTML = models.map(m => `<option value="${m}">${m}</option>`).join("");
     if (currentModel && models.includes(currentModel)) {
         modelDropdown.value = currentModel;
+    } else {
+        modelDropdown.value = "";
     }
+    // テキストボックスにも反映
+    modelTextInput.value = currentModel || modelDropdown.value || "";
 }
 
 // プロバイダーごとのデフォルトAPIエンドポイント
@@ -60,7 +66,8 @@ async function syncDropdownsWithConfig() {
     const cfg = await window.go.main.App.GetConfig();
     providerDropdown.value = cfg.Provider;
     fillModelDropdown(cfg.Provider, cfg.Model);
-    modelDropdown.value = cfg.Model;
+    modelDropdown.value = MODELS[cfg.Provider]?.includes(cfg.Model) ? cfg.Model : "";
+    modelTextInput.value = cfg.Model;
     // APIエンドポイントも反映
     apiBaseUrlInput.value = cfg.APIBaseURL || (API_ENDPOINTS[cfg.Provider] || "");
 }
@@ -80,9 +87,20 @@ providerDropdown.onchange = async () => {
     });
 };
 modelDropdown.onchange = async () => {
+    modelTextInput.value = modelDropdown.value;
     await window.go.main.App.SetConfig({
         Provider: providerDropdown.value,
-        Model: modelDropdown.value,
+        Model: modelTextInput.value,
+        APIBaseURL: apiBaseUrlInput.value,
+        APIKey: apiKeyInput.value
+    });
+};
+modelTextInput.oninput = async () => {
+    // テキストボックスで直接編集された場合、ドロップダウンを空欄にする
+    modelDropdown.value = "";
+    await window.go.main.App.SetConfig({
+        Provider: providerDropdown.value,
+        Model: modelTextInput.value,
         APIBaseURL: apiBaseUrlInput.value,
         APIKey: apiKeyInput.value
     });
@@ -116,8 +134,8 @@ async function loadConfig() {
 settingsForm.onsubmit = async (e) => {
     e.preventDefault();
     const cfg = {
-        Provider: providerInput.value,
-        Model: modelInput.value,
+        Provider: providerDropdown.value,
+        Model: modelTextInput.value,
         APIBaseURL: apiBaseUrlInput.value,
         APIKey: apiKeyInput.value
     };
