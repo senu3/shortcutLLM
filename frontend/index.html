@@ -6,17 +6,23 @@
     <link rel="stylesheet" href="src/app.css">
     <meta charset="UTF-8">
     <title>AIチャット</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 
 <body>
     <nav class="nav">
         <div class="nav-left">
-            <a class="brand" href="#">shortcutLLM</a>
-            <div class="tabs">
-                <a class="active" id="tab-main">メイン</a>
-                <a id="tab-settings">設定</a>
-            </div>
+            <a class="brand" id="tab-main">shortcutLLM</a>
+            <select id="provider-dropdown" class="dropdown-inline">
+                <!-- プロバイダー候補はJSで動的に挿入 -->
+            </select>
+            <select id="model-dropdown" class="dropdown-inline">
+                <!-- モデル候補はJSで動的に挿入 -->
+            </select>
         </div>
+        <button id="tab-settings" class="button icon-only">
+            <img src="https://icongr.am/feather/more-vertical.svg?size=24">
+        </button>
     </nav>
     <div id="aiwindow">
         <div id="main-view">
@@ -29,28 +35,12 @@
         <div id="settings-view" style="display:none;">
             <form id="settings-form">
                 <div class="row">
-                    <label class="col-4">API種別</label>
-                    <select id="provider" class="col-8">
-                        <option value="ollama">Ollama</option>
-                        <option value="openai">OpenAI</option>
-                    </select>
+                    <label class="col-4">APIキー</label>
+                    <input id="apikey" class="col-8" type="text" />
                 </div>
                 <div class="row">
-                    <label class="col-4">モデル名</label>
-                    <input id="model" class="col-8" type="text" />
-                </div>
-
-                <div class="row">
-                    <span class="col-4"></span>
-                    <details class="dropdown col-8">
-                        <summary class="button outline">詳細設定</summary>
-                        <form class="card row">
-                            <label>APIエンドポイント</label>
-                            <input id="apibaseurl" class="col-12" type="text" />
-                            <label>APIキー</label>
-                            <input id="apikey" class="col-12" type="password" />
-                        </form>
-                    </details>
+                    <label class="col-4">APIエンドポイント</label>
+                    <input id="apibaseurl" class="col-8" type="text" />
                 </div>
                 <div class="row">
                     <button type="submit" class="button primary">保存</button>

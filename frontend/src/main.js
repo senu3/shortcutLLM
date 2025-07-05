@@ -13,10 +13,74 @@ const tabSettings = document.getElementById("tab-settings");
 const mainView = document.getElementById("main-view");
 const settingsView = document.getElementById("settings-view");
 const settingsForm = document.getElementById("settings-form");
-const providerInput = document.getElementById("provider");
-const modelInput = document.getElementById("model");
 const apiBaseUrlInput = document.getElementById("apibaseurl");
 const apiKeyInput = document.getElementById("apikey");
+
+// --- ドロップダウンUI制御 ---
+const providerDropdown = document.getElementById("provider-dropdown");
+const modelDropdown = document.getElementById("model-dropdown");
+
+// プロバイダー候補（今後拡張しやすいよう配列で定義）
+const PROVIDERS = [
+    { value: "ollama", label: "Ollama" },
+    { value: "openai", label: "OpenAI" }
+];
+// モデル候補（用途に応じて拡張可）
+const MODELS = {
+    ollama: ["gemma3", "phi3", "mistral", "Qwen3:4B"],
+    openai: ["gpt-4.1-nano", "gpt-4", "gpt-4o"]
+};
+
+// プロバイダー・モデルドロップダウンを動的生成
+function fillProviderDropdown() {
+    providerDropdown.innerHTML = PROVIDERS.map(p => `<option value="${p.value}">${p.label}</option>`).join("");
+}
+function fillModelDropdown(provider, currentModel) {
+    const models = MODELS[provider] || [];
+    modelDropdown.innerHTML = models.map(m => `<option value="${m}">${m}</option>`).join("");
+    if (currentModel && models.includes(currentModel)) {
+        modelDropdown.value = currentModel;
+    }
+}
+
+// プロバイダーごとのデフォルトAPIエンドポイント
+const API_ENDPOINTS = {
+    ollama: "http://localhost:11434",
+    openai: ""
+};
+
+// 設定反映・保存
+async function syncDropdownsWithConfig() {
+    const cfg = await window.go.main.App.GetConfig();
+    providerDropdown.value = cfg.Provider;
+    fillModelDropdown(cfg.Provider, cfg.Model);
+    modelDropdown.value = cfg.Model;
+    // APIエンドポイントも反映
+    apiBaseUrlInput.value = cfg.APIBaseURL || (API_ENDPOINTS[cfg.Provider] || "");
+}
+
+providerDropdown.onchange = async () => {
+    fillModelDropdown(providerDropdown.value);
+    // モデル自動選択
+    modelDropdown.value = (MODELS[providerDropdown.value] || [])[0] || "";
+    // APIエンドポイント自動セット
+    apiBaseUrlInput.value = API_ENDPOINTS[providerDropdown.value] || "";
+    // 設定保存
+    await window.go.main.App.SetConfig({
+        Provider: providerDropdown.value,
+        Model: modelDropdown.value,
+        APIBaseURL: apiBaseUrlInput.value,
+        APIKey: apiKeyInput.value
+    });
+};
+modelDropdown.onchange = async () => {
+    await window.go.main.App.SetConfig({
+        Provider: providerDropdown.value,
+        Model: modelDropdown.value,
+        APIBaseURL: apiBaseUrlInput.value,
+        APIKey: apiKeyInput.value
+    });
+};
 
 function showMain() {
     mainView.style.display = "";
@@ -55,6 +119,11 @@ settingsForm.onsubmit = async (e) => {
     alert("設定を保存しました");
     showMain();
 };
+
+// 初期化
+fillProviderDropdown();
+syncDropdownsWithConfig();
+providerDropdown.dispatchEvent(new Event("change"));
 
 button.onclick = async () => {
     const prompt = input.value;
