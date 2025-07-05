@@ -23,12 +23,16 @@ const modelDropdown = document.getElementById("model-dropdown");
 // プロバイダー候補（今後拡張しやすいよう配列で定義）
 const PROVIDERS = [
     { value: "openai", label: "OpenAI" },
-    { value: "ollama", label: "Ollama" }
+    { value: "anthropic", label: "Anthropic" },
+    { value: "gemini", label: "Gemini" },
+    { value: "ollama", label: "Ollama" },
 ];
 // モデル候補（用途に応じて拡張可）
 const MODELS = {
     openai: ["gpt-4.1-nano", "gpt-4.1-mini", "gpt-4.1"],
-    ollama: ["gemma3", "phi3", "mistral", "Qwen3:4B"]
+    anthropic: ["claude-sonnet-4-0", "claude-opus-4-0", "claude-3-5-haiku-latest"],
+    gemini: ["gemini-2.5-flash", "gemini-2.5-pro"],
+    ollama: ["gemma3", "phi3", "mistral", "Qwen3"]
 };
 
 // プロバイダー・モデルドロップダウンを動的生成
@@ -46,6 +50,8 @@ function fillModelDropdown(provider, currentModel) {
 // プロバイダーごとのデフォルトAPIエンドポイント
 const API_ENDPOINTS = {
     openai: "",
+    anthropic: "",
+    gemini: "",
     ollama: "http://localhost:11434"
 };
 

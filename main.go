@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/tmc/langchaingo/llms"
+	"github.com/tmc/langchaingo/llms/anthropic"
+	"github.com/tmc/langchaingo/llms/googleai"
 	"github.com/tmc/langchaingo/llms/ollama"
 	"github.com/tmc/langchaingo/llms/openai"
 	"github.com/wailsapp/wails/v2"
@@ -28,8 +30,26 @@ func (a *App) AskAI(prompt string) (string, error) {
 		}
 		llm, err = openai.New(
 			openai.WithModel(cfg.Model),
-			openai.WithBaseURL(cfg.APIBaseURL),
 			openai.WithToken(token),
+		)
+	} else if cfg.Provider == "anthropic" {
+		token := cfg.APIKey
+		if token == "" {
+			token = os.Getenv("ANTHROPIC_API_KEY")
+		}
+		llm, err = anthropic.New(
+			anthropic.WithModel(cfg.Model),
+			anthropic.WithToken(token),
+		)
+	} else if cfg.Provider == "gemini" {
+		token := cfg.APIKey
+		if token == "" {
+			token = os.Getenv("GEMINI_API_KEY")
+		}
+		llm, err = googleai.New(
+			context.Background(),
+			googleai.WithDefaultModel(cfg.Model),
+			googleai.WithAPIKey(token),
 		)
 	} else {
 		llm, err = ollama.New(
