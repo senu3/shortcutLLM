@@ -78,7 +78,7 @@ func main() {
 	err := wails.Run(&options.App{
 		Title:       "AIチャット（Wails×Go）",
 		Width:       700,
-		Height:      300,
+		Height:      400,
 		AlwaysOnTop: true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,

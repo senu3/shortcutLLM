@@ -47,7 +47,7 @@ func (a *App) GetConfig() (Config, error) {
 		// ファイルがなければ初期値を返す
 		cfg = Config{
 			Provider:   "OpenAI",
-			Model:      "gpt-4.1-nano",
+			Model:      "gpt-5-nano",
 			APIBaseURL: "",
 			APIKey:     "",
 		}
