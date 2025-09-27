@@ -60,7 +60,7 @@ func (a *App) AskAI(prompt string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	completion, err := llms.GenerateFromSinglePrompt(ctx, llm, prompt)
+	completion, err := llms.GenerateFromSinglePrompt(ctx, llm, prompt, llms.WithTemperature(1))
 	if err != nil {
 		return "", err
 	}
@@ -78,7 +78,7 @@ func main() {
 	err := wails.Run(&options.App{
 		Title:       "AIチャット（Wails×Go）",
 		Width:       700,
-		Height:      400,
+		Height:      360,
 		AlwaysOnTop: true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,

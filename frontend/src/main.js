@@ -31,8 +31,8 @@ const PROVIDERS = [
 ];
 // モデル候補（用途に応じて拡張可）
 const MODELS = {
-    openai: ["gpt-5-chat-latest","gpt-5","gpt-5-mini","gpt-5-nano","gpt-4.1","gpt-4.1-mini","gpt-4.1-nano"],
-    anthropic: ["claude-opus-4-0","claude-opus-4-0","claude-sonnet-4-0","claude-3-7-sonnet-latest","claude-3-5-haiku-latest"],
+    openai: ["gpt-5-chat-latest", "gpt-5", "gpt-5-mini", "gpt-5-nano", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano"],
+    anthropic: ["claude-opus-4-0", "claude-opus-4-0", "claude-sonnet-4-0", "claude-3-7-sonnet-latest", "claude-3-5-haiku-latest"],
     gemini: ["gemini-2.5-flash", "gemini-2.5-pro"],
     ollama: ["gemma3"]
 };
@@ -158,23 +158,18 @@ button.onclick = async () => {
         const cleanRes = res.replace(/<think>[\s\S]*?<\/think>/gi, '');
         output.innerHTML = md.render(cleanRes.trim());
         setTimeout(async () => {
-            const aiwindow = document.getElementById("aiwindow");
-            const rect = aiwindow.getBoundingClientRect();
-            const width = rect.width;
-            const height = Math.max(MIN_HEIGHT, Math.min(Math.round(rect.height), 900));
-            await runtime.WindowSetSize(width, height);
-            // 画面情報取得
-            const screens = await runtime.ScreenGetAll();
-            const winPos = await runtime.WindowGetPosition();
-            // 現在のウィンドウ位置とサイズ
-            let x = winPos.x;
-            let y = winPos.y;
-            // メインスクリーンを仮定
-            const screen = screens.find(s => s.isPrimary) || screens[0];
-            // 下にはみ出す場合は調整
-            if (y + height > screen.height) y = Math.max(0, screen.height - height + 30);
-            await runtime.WindowSetPosition(x, y);
-        }, 10);
+            // ページ全体のコンテンツ幅・高さを取得（body基準）
+            const contentWidth = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth);
+            const contentHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+
+            // ウィンドウのフレーム（タイトルバー等）を考慮した余白（環境によって調整可）
+            const FRAME_PADDING_H = 40; // 高さ用の余白(px)
+
+            const desiredInnerHeight = Math.round(contentHeight) + FRAME_PADDING_H;
+            const height = Math.max(MIN_HEIGHT, Math.min(desiredInnerHeight, 1000));
+            // ウィンドウサイズを調整
+            await runtime.WindowSetSize(contentWidth, height);
+        }, 120);
     }).catch(err => {
         output.textContent = "エラー: " + err;
     });
