@@ -31,10 +31,10 @@ const PROVIDERS = [
 ];
 // モデル候補（用途に応じて拡張可）
 const MODELS = {
-    openai: ["gpt-4.1-nano", "gpt-4.1-mini", "gpt-4.1"],
-    anthropic: ["claude-sonnet-4-0", "claude-opus-4-0", "claude-3-5-haiku-latest"],
+    openai: ["gpt-5-chat-latest","gpt-5","gpt-5-mini","gpt-5-nano","gpt-4.1","gpt-4.1-mini","gpt-4.1-nano"],
+    anthropic: ["claude-opus-4-0","claude-opus-4-0","claude-sonnet-4-0","claude-3-7-sonnet-latest","claude-3-5-haiku-latest"],
     gemini: ["gemini-2.5-flash", "gemini-2.5-pro"],
-    ollama: ["gemma3", "phi3", "mistral", "Qwen3"]
+    ollama: ["gemma3"]
 };
 
 // プロバイダー・モデルドロップダウンを動的生成
