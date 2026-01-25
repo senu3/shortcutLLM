@@ -6,14 +6,26 @@ export function AskAI(arg1) {
   return window['go']['main']['App']['AskAI'](arg1);
 }
 
+export function GetClipboard() {
+  return window['go']['main']['App']['GetClipboard']();
+}
+
 export function GetConfig() {
   return window['go']['main']['App']['GetConfig']();
 }
 
-export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
+export function MarkSentToAI() {
+  return window['go']['main']['App']['MarkSentToAI']();
+}
+
+export function SetClipboard(arg1) {
+  return window['go']['main']['App']['SetClipboard'](arg1);
 }
 
 export function SetConfig(arg1) {
   return window['go']['main']['App']['SetConfig'](arg1);
+}
+
+export function UpdateContent(arg1) {
+  return window['go']['main']['App']['UpdateContent'](arg1);
 }

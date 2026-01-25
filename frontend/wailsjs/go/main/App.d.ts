@@ -4,8 +4,14 @@ import {main} from '../models';
 
 export function AskAI(arg1:string):Promise<string>;
 
+export function GetClipboard():Promise<string>;
+
 export function GetConfig():Promise<main.Config>;
 
-export function Greet(arg1:string):Promise<string>;
+export function MarkSentToAI():Promise<void>;
+
+export function SetClipboard(arg1:string):Promise<void>;
 
 export function SetConfig(arg1:main.Config):Promise<void>;
+
+export function UpdateContent(arg1:string):Promise<void>;

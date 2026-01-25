@@ -3,13 +3,16 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx         context.Context
+	lastContent string
+	sentToAI    bool
 }
 
 // NewApp creates a new App application struct
@@ -23,9 +26,33 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+// GetClipboard returns the current text in the clipboard
+func (a *App) GetClipboard() (string, error) {
+	return runtime.ClipboardGetText(a.ctx)
+}
+
+// SetClipboard sets the given text to the clipboard
+func (a *App) SetClipboard(text string) error {
+	return runtime.ClipboardSetText(a.ctx, text)
+}
+
+// UpdateContent syncs the frontend text content to the backend
+func (a *App) UpdateContent(text string) {
+	a.lastContent = text
+	a.sentToAI = false
+}
+
+// MarkSentToAI marks that the content was sent to AI
+func (a *App) MarkSentToAI() {
+	a.sentToAI = true
+}
+
+// OnBeforeClose checks state and saves to clipboard if needed
+func (a *App) OnBeforeClose(ctx context.Context) (prevent bool) {
+	if !a.sentToAI && a.lastContent != "" {
+		runtime.ClipboardSetText(a.ctx, a.lastContent)
+	}
+	return false
 }
 
 // 設定構造体

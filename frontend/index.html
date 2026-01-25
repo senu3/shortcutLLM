@@ -1,121 +1,69 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
-    <title>AIチャット</title>
-    <link rel="stylesheet" href="https://unpkg.com/chota">
+    <title>AI Clipboard Assistant</title>
     <link rel="stylesheet" href="/src/app.css">
-    <style>
-        body {
-            font-family: sans-serif;
-            background: #fafafa;
-            margin: 20px;
-        }
-
-        .nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .brand {
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        .dropdown-inline {
-            padding: 6px;
-        }
-
-        #aiwindow {
-            width: 100%;
-            padding: 18px;
-            border-radius: 10px;
-            background: white;
-            box-shadow: 0 2px 16px #0001;
-        }
-
-        .row {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        #prompt {
-            flex: 1;
-            padding: 6px;
-        }
-
-        #send {
-            padding: 6px 12px;
-        }
-
-        #response {
-            margin-top: 12px;
-            background: #f0f0ff;
-            min-height: 60px;
-            padding: 10px;
-            border-radius: 8px;
-        }
-    </style>
-</head>
-
-<body>
-    <nav class="nav">
-        <div class="nav-left">
-            <a id="tab-main" class="brand">shortcutLLM</a>
-
-            <select id="provider-dropdown" class="dropdown-inline">
-                <!-- JSで埋めます -->
-            </select>
-
-            <select id="model-dropdown" class="dropdown-inline">
-                <!-- JSで埋めます -->
-            </select>
-        </div>
-
-        <div>
-            <a id="tab-settings" title="設定" style="cursor:pointer;">⚙️</a>
-        </div>
-    </nav>
-
-    <div id="aiwindow">
-        <div id="main-view">
-            <div class="row">
-                <input id="prompt" type="text" placeholder="プロンプトを入力…" />
-                <button id="send">送信</button>
-            </div>
-            <div id="response">ここに回答が表示されます</div>
-        </div>
-
-        <div id="settings-view" style="display:none;">
-            <form id="settings-form">
-                <div class="row">
-                    <label style="width:100px">モデル名</label>
-                    <input id="model" type="text" style="flex:1" />
-                </div>
-                <div class="row">
-                    <label style="width:100px">APIエンドポイント</label>
-                    <input id="apibaseurl" type="text" style="flex:1" />
-                </div>
-                <div class="row">
-                    <button type="submit">保存</button>
-                </div>
-            </form>
-        </div>
-
-    </div>
-
     <script type="module" src="/src/main.js"></script>
-</body>
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Header / Nav -->
+        <header class="navbar">
+            <div class="brand">ShortcutLLM</div>
+            <div class="controls">
+                <select id="provider-dropdown" class="dropdown"></select>
+                <select id="model-dropdown" class="dropdown"></select>
+                <button id="settings-btn" class="icon-btn" title="Settings">⚙️</button>
+            </div>
+        </header>
 
+        <!-- Main Workspace -->
+        <main id="main-view">
+            <!-- Top: Clipboard Text Area -->
+            <div class="editor-area">
+                <textarea id="clipboard-text" placeholder="Clipboard content will appear here..."></textarea>
+            </div>
+
+            <!-- Middle: Action Buttons -->
+            <div class="action-bar">
+                <button id="save-btn" class="btn btn-primary">Save to Clipboard</button>
+                <button id="send-btn" class="btn btn-accent">Send to AI</button>
+            </div>
+
+            <!-- Bottom: AI Response -->
+            <div id="response-area" class="response-area">
+                <div id="response-content" class="markdown-body">
+                    <!-- Response goes here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Settings Modal (Hidden by default) -->
+        <div id="settings-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>Settings</h3>
+                <form id="settings-form">
+                    <div class="form-group">
+                        <label>Model Name</label>
+                        <input id="model-input" type="text" />
+                    </div>
+                    <div class="form-group">
+                        <label>API Base URL</label>
+                        <input id="api-base-url-input" type="text" />
+                    </div>
+                    <!-- Hidden API Key Input if needed, or just let user configure via env vars/file if preferred, but adhering to existing logic -->
+                    <div class="form-group" style="display:none"> 
+                        <label>API Key</label>
+                        <input id="api-key-input" type="password" />
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" id="close-settings-btn" class="btn">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
 </html>

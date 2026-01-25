@@ -1,183 +1,222 @@
 import MarkdownIt from "markdown-it";
 import * as runtime from "../wailsjs/runtime/runtime";
+
 const md = new MarkdownIt();
-const MIN_HEIGHT = 300;
 
-const input = document.getElementById("prompt");
-const button = document.getElementById("send");
-const output = document.getElementById("response");
+// UI Elements
+const clipboardText = document.getElementById("clipboard-text");
+const saveBtn = document.getElementById("save-btn");
+const sendBtn = document.getElementById("send-btn");
+const responseArea = document.getElementById("response-area"); // Initially hidden via CSS
+const responseContent = document.getElementById("response-content");
 
-// タブ切替・設定フォーム制御
-const tabMain = document.getElementById("tab-main");
-const tabSettings = document.getElementById("tab-settings");
-const mainView = document.getElementById("main-view");
-const settingsView = document.getElementById("settings-view");
-const settingsForm = document.getElementById("settings-form");
-const modelInput = document.getElementById("model");
-const apiBaseUrlInput = document.getElementById("apibaseurl");
-const apiKeyInput = document.getElementById("apikey");
-
-// --- ドロップダウンUI制御 ---
+// Settings UI
 const providerDropdown = document.getElementById("provider-dropdown");
 const modelDropdown = document.getElementById("model-dropdown");
-const modelTextInput = document.getElementById("model");
+const settingsBtn = document.getElementById("settings-btn");
+const settingsModal = document.getElementById("settings-modal");
+const closeSettingsBtn = document.getElementById("close-settings-btn");
+const settingsForm = document.getElementById("settings-form");
+const modelInput = document.getElementById("model-input");
+const apiBaseUrlInput = document.getElementById("api-base-url-input");
 
-// プロバイダー候補（今後拡張しやすいよう配列で定義）
+// Configuration Data
 const PROVIDERS = [
     { value: "openai", label: "OpenAI" },
     { value: "anthropic", label: "Anthropic" },
     { value: "gemini", label: "Gemini" },
     { value: "ollama", label: "Ollama" },
 ];
-// モデル候補（用途に応じて拡張可）
+
 const MODELS = {
-    openai: ["gpt-5-chat-latest", "gpt-5", "gpt-5-mini", "gpt-5-nano", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano"],
-    anthropic: ["claude-opus-4-0", "claude-opus-4-0", "claude-sonnet-4-0", "claude-3-7-sonnet-latest", "claude-3-5-haiku-latest"],
+    openai: ["gpt-5-chat-latest", "gpt-5", "gpt-5-mini", "gpt-4.1", "gpt-4.1-mini"],
+    anthropic: ["claude-opus-4-0", "claude-sonnet-4-0", "claude-3-7-sonnet-latest"],
     gemini: ["gemini-2.5-flash", "gemini-2.5-pro"],
-    ollama: ["gemma3"]
+    ollama: ["gemma3", "llama3"]
 };
 
-// プロバイダー・モデルドロップダウンを動的生成
-function fillProviderDropdown() {
+const API_ENDPOINTS = {
+    ollama: "http://localhost:11434"
+};
+
+const MIN_HEIGHT = 200; // Base height without response
+
+// --- Initialization ---
+
+async function init() {
+    // Fill Dropdowns
     providerDropdown.innerHTML = PROVIDERS.map(p => `<option value="${p.value}">${p.label}</option>`).join("");
+
+    // Load Config
+    try {
+        const cfg = await window.go.main.App.GetConfig();
+        if (cfg) {
+            providerDropdown.value = cfg.Provider || "openai";
+            fillModelDropdown(providerDropdown.value, cfg.Model);
+            modelInput.value = cfg.Model;
+            apiBaseUrlInput.value = cfg.APIBaseURL;
+        }
+    } catch (e) {
+        console.error("Failed to load config", e);
+        fillModelDropdown("openai");
+    }
+
+    // Load Clipboard
+    loadClipboard();
 }
+
 function fillModelDropdown(provider, currentModel) {
     const models = MODELS[provider] || [];
     modelDropdown.innerHTML = models.map(m => `<option value="${m}">${m}</option>`).join("");
     if (currentModel && models.includes(currentModel)) {
         modelDropdown.value = currentModel;
     } else {
-        modelDropdown.value = "";
+        modelDropdown.value = models[0] || "";
     }
-    // テキストボックスにも反映
-    modelTextInput.value = currentModel || modelDropdown.value || "";
 }
 
-// プロバイダーごとのデフォルトAPIエンドポイント
-const API_ENDPOINTS = {
-    openai: "",
-    anthropic: "",
-    gemini: "",
-    ollama: "http://localhost:11434"
+// --- Window Resizing ---
+
+async function adjustWindowSize() {
+    requestAnimationFrame(async () => {
+        const container = document.querySelector('.app-container');
+        const contentHeight = container.scrollHeight;
+        const width = 700;
+        await runtime.WindowSetSize(width, contentHeight + 40);
+    });
+}
+
+// --- Clipboard & Sync Logic ---
+
+let debounceTimer;
+async function syncContent() {
+    const text = clipboardText.value;
+    window.go.main.App.UpdateContent(text);
+}
+
+clipboardText.onfocus = () => {
+    // Un-collapse if collapsed
+    if (document.body.classList.contains("sending")) {
+        document.body.classList.remove("sending");
+        // Hide response area as requested
+        responseArea.style.display = "none";
+        adjustWindowSize();
+    }
 };
 
-// 設定反映・保存
-async function syncDropdownsWithConfig() {
-    const cfg = await window.go.main.App.GetConfig();
-    providerDropdown.value = cfg.Provider;
-    fillModelDropdown(cfg.Provider, cfg.Model);
-    modelDropdown.value = MODELS[cfg.Provider]?.includes(cfg.Model) ? cfg.Model : "";
-    modelTextInput.value = cfg.Model;
-    // APIエンドポイントも反映
-    apiBaseUrlInput.value = cfg.APIBaseURL || (API_ENDPOINTS[cfg.Provider] || "");
+clipboardText.oninput = () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(syncContent, 500); // 500ms debounce
+    // Also handy to save locally if needed, but backend sync is key for 'OnExit'
+};
+
+async function loadClipboard() {
+    try {
+        const text = await window.go.main.App.GetClipboard();
+        clipboardText.value = text;
+        syncContent(); // Initial sync
+        setTimeout(adjustWindowSize, 100);
+    } catch (e) {
+        console.error("Failed to get clipboard", e);
+    }
 }
 
+async function saveToClipboard() {
+    const text = clipboardText.value;
+    try {
+        await window.go.main.App.SetClipboard(text);
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = "Saved!";
+        setTimeout(() => saveBtn.textContent = originalText, 1000);
+    } catch (e) {
+        alert("Failed to save clipboard: " + e);
+    }
+}
+
+// --- AI Logic ---
+
+async function sendToAI() {
+    const prompt = clipboardText.value;
+    if (!prompt.trim()) return;
+
+    // Collapse UI
+    document.body.classList.add("sending");
+
+    // Mark as sent
+    window.go.main.App.MarkSentToAI();
+
+    responseContent.innerHTML = '<div class="loading-spinner"></div>';
+    responseArea.style.display = "block";
+    adjustWindowSize();
+
+    try {
+        const res = await window.go.main.App.AskAI(prompt);
+        const cleanRes = res.replace(/<think>[\s\S]*?<\/think>/gi, '');
+        responseContent.innerHTML = md.render(cleanRes.trim());
+        adjustWindowSize();
+    } catch (err) {
+        responseContent.textContent = "Error: " + err;
+        adjustWindowSize();
+    }
+}
+
+// --- Event Listeners ---
+
+saveBtn.onclick = saveToClipboard;
+sendBtn.onclick = sendToAI;
+
+// Ctrl+Enter to Send
+clipboardText.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.key === "Enter") {
+        e.preventDefault();
+        sendToAI();
+    }
+});
+
+// Sync Dropdowns
 providerDropdown.onchange = async () => {
-    fillModelDropdown(providerDropdown.value);
-    // モデル自動選択
-    modelDropdown.value = (MODELS[providerDropdown.value] || [])[0] || "";
-    // APIエンドポイント自動セット
-    apiBaseUrlInput.value = API_ENDPOINTS[providerDropdown.value] || "";
-    // 設定保存
-    await window.go.main.App.SetConfig({
-        Provider: providerDropdown.value,
-        Model: modelDropdown.value,
-        APIBaseURL: apiBaseUrlInput.value,
-        APIKey: apiKeyInput.value
-    });
+    const provider = providerDropdown.value;
+    fillModelDropdown(provider);
+    modelInput.value = modelDropdown.value;
+    apiBaseUrlInput.value = API_ENDPOINTS[provider] || "";
+    await saveConfig();
 };
+
 modelDropdown.onchange = async () => {
-    modelTextInput.value = modelDropdown.value;
-    await window.go.main.App.SetConfig({
-        Provider: providerDropdown.value,
-        Model: modelTextInput.value,
-        APIBaseURL: apiBaseUrlInput.value,
-        APIKey: apiKeyInput.value
-    });
-};
-modelTextInput.oninput = async () => {
-    // テキストボックスで直接編集された場合、ドロップダウンを空欄にする
-    modelDropdown.value = "";
-    await window.go.main.App.SetConfig({
-        Provider: providerDropdown.value,
-        Model: modelTextInput.value,
-        APIBaseURL: apiBaseUrlInput.value,
-        APIKey: apiKeyInput.value
-    });
+    modelInput.value = modelDropdown.value;
+    await saveConfig();
 };
 
-function showMain() {
-    mainView.style.display = "";
-    settingsView.style.display = "none";
-    tabMain.classList.add("active");
-    tabSettings.classList.remove("active");
-}
-function showSettings() {
-    mainView.style.display = "none";
-    settingsView.style.display = "";
-    tabMain.classList.remove("active");
-    tabSettings.classList.add("active");
-    loadConfig();
-}
-tabMain.onclick = showMain;
-tabSettings.onclick = showSettings;
+async function saveConfig() {
+    const cfg = {
+        Provider: providerDropdown.value,
+        Model: modelInput.value,
+        APIBaseURL: apiBaseUrlInput.value,
+        APIKey: ""
+    };
+    const current = await window.go.main.App.GetConfig();
+    cfg.APIKey = current.APIKey;
 
-// 設定の取得・反映
-async function loadConfig() {
-    const cfg = await window.go.main.App.GetConfig();
-    providerInput.value = cfg.Provider;
-    modelInput.value = cfg.Model;
-    apiBaseUrlInput.value = cfg.APIBaseURL;
-    apiKeyInput.value = cfg.APIKey;
+    await window.go.main.App.SetConfig(cfg);
 }
-// 設定保存
+
+// Settings Modal
+settingsBtn.onclick = () => settingsModal.style.display = "flex";
+closeSettingsBtn.onclick = () => settingsModal.style.display = "none";
 settingsForm.onsubmit = async (e) => {
     e.preventDefault();
     const cfg = {
         Provider: providerDropdown.value,
-        Model: modelTextInput.value,
+        Model: modelInput.value,
         APIBaseURL: apiBaseUrlInput.value,
-        APIKey: apiKeyInput.value
+        APIKey: ""
     };
+    const current = await window.go.main.App.GetConfig();
+    cfg.APIKey = current.APIKey;
+
     await window.go.main.App.SetConfig(cfg);
-    alert("設定を保存しました");
-    showMain();
+    settingsModal.style.display = "none";
 };
 
-// 初期化
-fillProviderDropdown();
-syncDropdownsWithConfig();
-providerDropdown.dispatchEvent(new Event("change"));
-
-button.onclick = async () => {
-    const prompt = input.value;
-    if (!prompt) return;
-    output.innerHTML = '<span class="loading"></span>';
-    window.go.main.App.AskAI(prompt).then(res => {
-        // <think>...</think>を除去
-        const cleanRes = res.replace(/<think>[\s\S]*?<\/think>/gi, '');
-        output.innerHTML = md.render(cleanRes.trim());
-        setTimeout(async () => {
-            // ページ全体のコンテンツ幅・高さを取得（body基準）
-            const contentWidth = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth);
-            const contentHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
-
-            // ウィンドウのフレーム（タイトルバー等）を考慮した余白（環境によって調整可）
-            const FRAME_PADDING_H = 40; // 高さ用の余白(px)
-
-            const desiredInnerHeight = Math.round(contentHeight) + FRAME_PADDING_H;
-            const height = Math.max(MIN_HEIGHT, Math.min(desiredInnerHeight, 1000));
-            // ウィンドウサイズを調整
-            await runtime.WindowSetSize(contentWidth, height);
-        }, 120);
-    }).catch(err => {
-        output.textContent = "エラー: " + err;
-    });
-};
-
-input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-        button.click();
-    }
-});
-
+// Start
+init();

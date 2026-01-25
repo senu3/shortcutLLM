@@ -1,0 +1,33 @@
+/* Collapsed State */
+body.sending .editor-area {
+    min-height: 50px;
+    /* Shrink */
+    flex: 0 0 50px;
+}
+
+body.sending textarea#clipboard-text {
+    padding: 8px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+body.sending .action-bar {
+    /* Optional: Hide buttons or make smaller? Loop requests: "fold" input and buttons. */
+    display: none;
+}
+
+/* If buttons are hidden, how to send again? Or "Reset"? 
+   User said "Fold". "Send" implies waiting for answer. 
+   Usually users want to see the answer.
+   Maybe we keep a small "New Chat" button or similar? 
+   But request was "fold input and buttons".
+   Let's just hide action bar and shrink textarea.
+   Wait, if action bar is hidden, how do they "Save to Clipboard" after response?
+   User said: "When sent, fold input and buttons".
+   We should probably un-collapse when they click the input again or after response?
+   User didn't specify. I'll just fold for now. 
+   Maybe add a condition to UN-fold if they click the textarea.
+*/
+body.sending textarea#clipboard-text:focus {
+    /* Auto expand on focus? */
+}
