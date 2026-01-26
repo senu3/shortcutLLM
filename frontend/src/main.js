@@ -22,17 +22,17 @@ const apiBaseUrlInput = document.getElementById("api-base-url-input");
 
 // Configuration Data
 const PROVIDERS = [
-    { value: "openai", label: "OpenAI" },
-    { value: "anthropic", label: "Anthropic" },
     { value: "gemini", label: "Gemini" },
+    { value: "openai", label: "OpenAI" },
+    { value: "groq", label: "Groq" },
     { value: "ollama", label: "Ollama" },
 ];
 
 const MODELS = {
-    openai: ["gpt-5-chat-latest", "gpt-5", "gpt-5-mini", "gpt-4.1", "gpt-4.1-mini"],
-    anthropic: ["claude-opus-4-0", "claude-sonnet-4-0", "claude-3-7-sonnet-latest"],
-    gemini: ["gemini-2.5-flash", "gemini-2.5-pro"],
-    ollama: ["gemma3", "llama3"]
+    gemini: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-3-flash"],
+    openai: ["gpt-5-nano", "gpt-5-mini"],
+    groq: ["llama-4-70b", "qwen-2.5-72b-instruct", "mixtral-large-2", "gemma-3-27b-it"],
+    ollama: ["gemma3", "qwen3:4b", "qwen3:8b", "llama3"]
 };
 
 const API_ENDPOINTS = {
@@ -107,7 +107,6 @@ clipboardText.onfocus = () => {
 clipboardText.oninput = () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(syncContent, 500); // 500ms debounce
-    // Also handy to save locally if needed, but backend sync is key for 'OnExit'
 };
 
 async function loadClipboard() {
@@ -132,6 +131,19 @@ async function saveToClipboard() {
         alert("Failed to save clipboard: " + e);
     }
 }
+
+// Auto-Close on Blur
+window.onblur = async () => {
+    // Ensure we sync before quitting if needed, though debouncer might be pending.
+    // Force sync?
+    const text = clipboardText.value;
+    await window.go.main.App.UpdateContent(text);
+
+    // Quit
+    runtime.Quit();
+};
+// WARNING: onblur can trigger when opening modals/alerts or sometimes internal interactions. 
+// Given the requirements, this is the requested behavior "Close when clicking outside".
 
 // --- AI Logic ---
 

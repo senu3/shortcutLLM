@@ -1,20 +1,30 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <title>AI Clipboard Assistant</title>
     <link rel="stylesheet" href="/src/app.css">
     <script type="module" src="/src/main.js"></script>
 </head>
+
 <body class="dark-theme">
     <div class="app-container">
         <!-- Header / Nav -->
         <header class="navbar">
-            <div class="brand">ShortcutLLM</div>
+            <div class="brand">ShortcutLLM&CLIP</div>
             <div class="controls">
                 <select id="provider-dropdown" class="dropdown"></select>
-                <select id="model-dropdown" class="dropdown"></select>
-                <button id="settings-btn" class="icon-btn" title="Settings">⚙️</button>
+                <select id="model-dropdown" class="dropdown" style="min-width: 12rem;"></select>
+                <button id="settings-btn" class="icon-btn" title="Settings">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+                        </path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </button>
             </div>
         </header>
 
@@ -27,8 +37,9 @@
 
             <!-- Middle: Action Buttons -->
             <div class="action-bar">
-                <button id="save-btn" class="btn btn-primary">Save to Clipboard</button>
-                <button id="send-btn" class="btn btn-accent">Send to AI</button>
+                <span class="auto-save-text">Close and copy when clicking outside.</span>
+                <button id="save-btn" class="btn btn-accent">Save to Clipboard</button>
+                <button id="send-btn" class="btn btn-primary">Send to AI</button>
             </div>
 
             <!-- Bottom: AI Response -->
@@ -52,13 +63,13 @@
                         <label>API Base URL</label>
                         <input id="api-base-url-input" type="text" />
                     </div>
-                    <!-- Hidden API Key Input if needed, or just let user configure via env vars/file if preferred, but adhering to existing logic -->
-                    <div class="form-group" style="display:none"> 
+                    <!-- Hidden API Key Input if needed -->
+                    <div class="form-group" style="display:none">
                         <label>API Key</label>
                         <input id="api-key-input" type="password" />
                     </div>
                     <div class="modal-actions">
-                        <button type="button" id="close-settings-btn" class="btn">Close</button>
+                        <button type="button" id="close-settings-btn" class="btn btn-tertiary">Close</button>
                         <button type="submit" class="btn btn-primary">Save</button>
                     </div>
                 </form>
@@ -66,4 +77,5 @@
         </div>
     </div>
 </body>
+
 </html>

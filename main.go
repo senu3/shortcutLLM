@@ -77,10 +77,10 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:       "AIチャット（Wails×Go）",
 		Width:       700,
-		Height:      360,
+		Height:      300,
 		AlwaysOnTop: true,
+		Frameless:   true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
@@ -94,7 +94,7 @@ func main() {
 			WebviewIsTransparent: true,
 			WindowIsTranslucent:  true,
 			BackdropType:         windows.Acrylic,
-			DisableWindowIcon:    false,
+			DisableWindowIcon:    true,
 			IsZoomControlEnabled: false,
 			ZoomFactor:           1.0,
 		},
