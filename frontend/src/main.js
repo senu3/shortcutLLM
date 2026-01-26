@@ -63,6 +63,16 @@ async function init() {
 
     // Load Clipboard
     loadClipboard();
+
+    // Force focus
+    window.focus();
+    clipboardText.focus();
+
+    // Retry focus for robustness
+    setTimeout(() => {
+        window.focus();
+        clipboardText.focus();
+    }, 100);
 }
 
 function fillModelDropdown(provider, currentModel) {
@@ -120,15 +130,23 @@ async function loadClipboard() {
     }
 }
 
-// Auto-Close on Blur
-window.onblur = async () => {
-    // Ensure we sync before quitting if needed, though debouncer might be pending.
-    // Force sync?
-    const text = clipboardText.value;
-    await window.go.main.App.UpdateContent(text);
 
-    // Quit
-    runtime.Quit();
+// Auto-Close on Blur
+let blurTimer;
+window.onblur = async () => {
+    // Debounce quit to allow regain of focus (e.g. clicking app when not focused)
+    blurTimer = setTimeout(async () => {
+        // Ensure we sync before quitting if needed
+        const text = clipboardText.value;
+        await window.go.main.App.UpdateContent(text);
+
+        // Quit
+        runtime.Quit();
+    }, 200);
+};
+
+window.onfocus = () => {
+    if (blurTimer) clearTimeout(blurTimer);
 };
 // WARNING: onblur can trigger when opening modals/alerts or sometimes internal interactions. 
 // Given the requirements, this is the requested behavior "Close when clicking outside".
