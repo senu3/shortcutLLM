@@ -120,18 +120,6 @@ async function loadClipboard() {
     }
 }
 
-async function saveToClipboard() {
-    const text = clipboardText.value;
-    try {
-        await window.go.main.App.SetClipboard(text);
-        const originalText = saveBtn.textContent;
-        saveBtn.textContent = "Saved!";
-        setTimeout(() => saveBtn.textContent = originalText, 1000);
-    } catch (e) {
-        alert("Failed to save clipboard: " + e);
-    }
-}
-
 // Auto-Close on Blur
 window.onblur = async () => {
     // Ensure we sync before quitting if needed, though debouncer might be pending.
@@ -174,7 +162,6 @@ async function sendToAI() {
 
 // --- Event Listeners ---
 
-saveBtn.onclick = saveToClipboard;
 sendBtn.onclick = sendToAI;
 
 // Ctrl+Enter to Send
